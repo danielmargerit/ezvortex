@@ -1,0 +1,552 @@
+%-----------------------------------------------------------------------------%
+% ez3d_doc.tex -- EZ-Vortex documentation                                     %
+%                                                                             %
+% $Revision: 1   $
+% $Date: 2000/06/29 15:03:01 $
+% 
+%-----------------------------------------------------------------------------%
+%-----------------------------------------------------------------------------%
+
+% This is a LaTex source file.
+
+\documentstyle[12pt,amsfonts]{article}
+\textheight 9in  \textwidth 6.5in
+\topmargin -.7in \oddsidemargin .0in
+
+\newcommand{\vX}{ \mbox{\bf X}}
+\newcommand{\vv} { \mbox{\bf v}}
+\newcommand{\vA} { \mbox{\bf A}}
+\newcommand{\vb}{ \mbox{\bf b}}
+\newcommand{\vn}{ \mbox{\bf n}}
+\newcommand{\vtau}{\mbox{\bf t} }
+\newcommand{\rb}{\bar r}
+\newcommand{\eps}{\epsilon}
+
+\begin{document}
+\baselineskip = 20pt plus 1pt minus 1pt
+\parskip = 8pt
+\parindent=0pt
+
+\begin{center} 
+{\bf EZ-VORTEX DOCUMENTATION: \\ \large a Slender Vortex Filament solver} 
+\end{center} 
+
+\bigskip
+{\bf I. General} 
+\smallskip
+
+This package uses OpenGL for 3D rendering and has been optimized for
+use on SGI workstations.  By using the Mesa library (public domain
+implementation of most OpenGL routines) it should be possible to run
+on virtually any machine supporting X.  EZ-Vortex could be  run on
+a PC with the Linux operating system.  See
+http://mesa3d.sourceforge.net/
+Note, you can run without graphics, but you must have OpenGL (or Mesa)
+header files and libraries to use the code.
+
+This code is adapted from  EZ-Scroll a Code for Simulating 
+Scroll Waves  developped by Dwight Barkley (http://www.maths.warwick.ac.uk/$\sim$barkley/ez\_software.html) with courtesy of Dwight Barkley (barkley@maths.warwick.ac.uk, Copyright (C) 1998). The EZ-Vortex package (in particular this document) is under development. There are aspects of the code which ones may  not be happy with, but to my knowledge everything works correctly.
+
+The philosophy of the original code and this one is to keep programs as simple as possible and to
+provide documentation by way of comments within the code itself.  The
+user is expected to modify the programs according to his or her needs.
+The bulk of the package is devoted to graphics. Almost all of the
+execution time is spent in a loop in the routine {\sf Step()} in {\em
+ezstep3d.c}.
+
+
+The computational methods are described in more detail in the
+references at the end of this document.  Ref.~[1] describes the 3D
+implementation of the initial Code EZ-Scroll.  Ref.~[2] describes the asymptotic derivation of the Callegari and Ting equation of motion. Ref.~[4,5] describes the equations and the computational  methods. Ref.~[3,6] describes the expansions of the Biot and Savart law.  In Ref.~[7] the non-simailar core equation are summarized. If you generate publications from using EZ-Vortex, I ask that you cite these papers ~[4,5].
+
+
+\medskip
+{\bf II. Running EZ-Vortex} 
+\smallskip
+
+{\bf Files:} You should have the following files: \\ {\em ezvortex.c,
+ezstep3d.c, ezgraph3d.c, ezopengl.c, ezvortex.h, ezstep3d.h,
+ezgraph3d.h, ezopengl.h, task.dat, ic.m, fc.m, history.m}, and {\em Makefile}. \\ You will
+probably want to save copies of these files (in compressed tar
+format).
+
+{\bf make}: It is up to you to edit {\em Makefile} as necessary for
+your system. You can either compile using SGI C (cc) or else using GNU
+C (gcc).  You may, if you wish, specify NP (the number of point on a filament) etc.~at compile time.  Then
+these will be ignored in the task file.
+
+Note: On an SGI, using the SGI C compiler cc with -DNP etc gives the
+fastest execution.  Using the GNU C compiler gcc with -DNP is slightly
+slower and gcc without -DNP is slightly slower still.  Using cc
+without -DNP is terrible and should not be used, i.e.~if you want to
+specify the number of grid points through the {\em task.dat} file,
+then you should to use GNU compiler and not the SGI C compiler.  This
+is still being looked into.
+
+Note: in our laboratory  the LOADLIBES macro in the makefile is
+\begin{itemize} 
+   \item SGI machine (Berlioz):
+
+LOADLIBES = -lGL -lX11 -lXext -lm   -I/usr/include 
+ \item linux machine (Liszt):
+
+LOADLIBES = -I/usr/X11R6/include -L/usr/X11R6/lib/ -lGL 
+
+\hskip 7 cm -L/usr/X11R6/lib/ -lX11  -lm 
+\end{itemize}
+
+Make {\em ezvortex} by typing {\em make}. Then run by typing {\em
+ezvortex}. A window should open containing an initial condition for the vorticity field, i.e. one or several closed or open filaments. The  centerlines of the filaments are plotted.  Hitting the space bar in the EZ-Vortex window will
+start the simulation. This is a coarse resolution run showing the
+speed possible with EZ-Vortex simulations.  With the pointer in the
+EZ-Vortex window, you can:
+
+\begin{list}{dummy}
+{\labelwidth=0.2in\labelsep=4pt\partopsep=-10pt\parsep=-10pt\itemsep=12pt}
+\item[(1)] Switch between curve display, worm display and no field by typing
+{\em c}, {\em w}, or {\em n} respectively. The worm display is a tube display with a thickness that allows to have a  3D view without rotating. Without rotating, no 3D view can be seen from the curve display. The tube radius is only geometrical: it is not linked to the physical radius which may change due to the global stretching or to diffusion.
+
+\item[(2)] Pause the simulation by typing {\em p}, and resume by
+typing a {\em space}.
+
+\item[(3)] Rotate the image by first pausing the simulation, then by
+holding down the left mouse button and moving the cursor.
+
+\item[(4)] The key {\em r} resets the view to the initial (start up)
+view, and {\em z} sets the view to looking down the $z$-axis with the
+$x$- and $y$-axes in the usual orientation.  This view is useful for
+moving the image.
+
+\item[(5)] The arrow keys move the image in the x-y directions. The
+$+$ key moves the image up the z-axis and the $-$ moves it
+down the z-axis.  Again, for moving the image it is best first to
+have set the view by typing {\em z}.
+
+\item[(6)] Stop the simulation by typing: \\
+{\em q} for soft termination with all files closed or  \\
+{\em ESC} for immediate termination without writing final
+conditions (equivalent to typing control-C from the shell). 
+
+\item[(7)] Snapshot the window (on a SGI workstation) by typing {\em s}\\
+
+\end{list}
+
+After a successful run, you will have a file {\em fc.dat} in your
+directory which contains the final conditions of the run. If you copy
+this file to {\em ic.dat}, then the next time you run {\em ezvortex},
+this file will be read and used as an initial condition. 
+(The files {\em ic\_dat.m} and {\em fc\_dat.m} are matlab files that can also be used to see initial and final conditions.)
+
+{\bf IV. Equations} 
+
+ You have the choice between four equations of vortex filament motion which are implemented in {\it ezvortex.h} :
+\begin{list}{dummy}
+{\labelwidth=0.2in\labelsep=4pt\partopsep=-10pt\parsep=-10pt\itemsep=12pt}
+
+\item[(1)] The Callegari and Ting equation [2] (not stiff)
+
+	\begin{eqnarray}
+	\label{eCT}
+		\partial{\vX}/\partial{t}=\vA+{\Gamma K(s,t) \over{4\pi}}\left[{-\log\epsilon+\log(S)-1}
+		{+C_v(t)+C_w(t)}\right]\vb(s,t),
+        \end{eqnarray} 
+where   
+   	\begin{eqnarray}
+	\vA(s,t)= {\Gamma\over{4\pi}}  
+		\int\limits_{-\pi}^{+\pi} \sigma(s+s',t)\left[ 
+		{\vtau(s+s',t)\times(\vX(s,t)-\vX(s+s',t)) 
+		\over{\left|\vX(s,t)-\vX(s+s',t)\right|}^3}
+	-{K(s,t)\vb(s,t)\over{2\left|\lambda(s,s',t)  \right|}} 
+		\right]\mbox{d}s', \nonumber
+        \end{eqnarray}
+and $\lambda(s,s',t)=\int\limits_{s}^{s+s'}\sigma(s^*,t)\mbox{d}s^*.$
+Here, $\vX,$ is the centerline of the filament, $\Gamma$ is its circulation, $K$ is local curvature, $\epsilon$ is the reduced radius of its core, $S$ the length of the closed filament, $\sigma(s,t)=\left| \partial\vX/\partial s \right|,$ $(\vtau,\vn,\vb)$ is the Frenet frame of the curve $\vX,$
+and $C_v(t)$ and $C_w(t)$ are known functions which describe the orthoradial and axial evolution of the inner velocity in the core.  The core structure can be of different forms: 
+
+\begin{list}{dummy}
+{\labelwidth=0.2in\labelsep=4pt\partopsep=-10pt\parsep=-10pt\itemsep=12pt}
+
+\item[(11)]{\it A similar vortex core}: The circonferential and axial components of the relative velocity field for a similar vortex are 
+	\begin{eqnarray}
+	v^{(0)} = \frac{\Gamma}{2 \pi \rb}\left[1-e^{-\left({\rb}/{\bar{\delta}}\right)^2}\right],\nonumber\hskip 1 cm 
+	w^{(0)} = \frac{m_0}{\pi{\bar{\delta}}^2 }\left(\frac{S_0}{S}\right)^2e^{-\left({\rb}/{\bar{\delta}}\right)^2},\hskip 1 cm
+	\end{eqnarray}
+where $\bar{r}=r/\eps$ is the stretched radial distance to the filament, $\bar{\delta}=\delta/\eps$ is  the stretched radius, and $m_0$ is the initial axial flux of the ring. The stretched radius $\bar{\delta}$ is given by 
+%
+\begin{eqnarray} 
+     \bar{\delta}^2(t)&=&\bar{\delta}_0^2\left(\frac{S_0}{S(t)}\right)1_{\bar \nu}\nonumber\\
+        1_{\bar \nu}&=&1+\frac{\bar{\delta}_{\bar \nu}^2}{\bar{\delta}_0^2},\nonumber\\
+           \bar{\delta}_{\bar \nu}^2&=&4\bar{\nu}\int_0^t
+                     \frac{S(t')}{S_0}\mbox{d}t',\nonumber
+\end{eqnarray}
+%
+where ${\bar \nu}=\nu/\eps^2$ is the stretched kinematic viscosity. For the similar core structure as it is implemented in {\it ezstep3d.h} the inner functions are given by
+%
+\begin{eqnarray} 
+C_v(t)&=&[1+\gamma-\ln2]/2-\ln(\bar{\delta}),\nonumber\\
+C_w(t)&=&-2(S_0/S)^4(m_0/(\Gamma\bar{\delta}))^2,\nonumber
+\end{eqnarray} 
+%
+ where $\gamma$ is the Euler number. The effect of the diffusion is easy seen in these expressions through the term $\tau_{\alpha}$ in $\bar{\delta}$ and the one of the stretching through the ratio $S_0/S$. 
+
+\item[(12)]{\it An inviscid vortex core}:
+  If the fluid is inviscid ($\bar \nu=0$)  the  circonferential and axial components of the relative velocity field are are in the form
+%
+\begin{eqnarray} 
+         v^{(0)}&=&{v}_0(\eta)\left(S_0/S(t)\right)^{-1/2},\nonumber\\
+         w^{(0)}&=&{w}_0(\eta)\left(S_0/S(t)\right),\nonumber
+\end{eqnarray}
+%
+where $S_0$ is the initial length of the filament, $\eta=\rb/\bar{\delta}$, and $({v}_0(\eta),{w}_0(\eta))$ are the initial velocity fields. The  $\eps$-stretched radius $\bar{\delta}$ is 
+%
+$$\bar{\delta}^2(t)=\bar{\delta}_0^2\left(S_0^{(0)}/S^{(0)}(t)\right).$$
+The inner functions are given by
+%
+\begin{eqnarray} 
+        C_v(t)&=&C_v(0)-\log\bar{\delta}(t),\nonumber\\
+        C_w(t)&=&C_w(0)\left(S_0^{(0)}/S^{(0)}(t)\right)^3,\nonumber
+\end{eqnarray}
+%
+where $C_v(0)$ and $C_w(0)$ are the associated initial core constant. 
+
+\item[(13)]{\it A non-similar vortex core}:
+ If the flow is viscous (${\bar \nu}\neq 0$) and the core is not similar, the  circonferential and axial components of the relative velocity field are are in the form [7]
+%
+\begin{eqnarray} 
+         v^{(0)}&=&\frac{1}{\bar{\delta}}\frac{1}{\eta}\left[
+         \frac{\Gamma}{2\pi}\left(1-\mbox{e}^{-\eta^2}\right)
+                          +\mbox{e}^{-\eta^2}\sum_{n=1}^{\infty}\bar{\delta}_0^2D_nL_n(\eta^2)
+        P_n(\eta^2)
+        1_{\bar \nu}^{-n}
+\right]
+,\nonumber\\
+        w^{(0)}&=&\frac{2}{\bar{\delta}^2}\left(\frac{S_0}{S(t)}\right)^2
+   \left[
+     \frac{m_0}{2\pi}\mbox{e}^{-\eta^2}
+     +
+      \mbox{e}^{-\eta^2}
+     \sum_{n=1}^{\infty}\bar{\delta}_0^2C_nL_n(\eta^2)
+       1_{\bar \nu}^{-n}\right].
+    \nonumber
+\end{eqnarray}
+%
+The  stretched radius $\bar{\delta}$ given by
+%
+\begin{eqnarray} 
+     \bar{\delta}^2(t)&=&\bar{\delta}_0^2\left(\frac{S_0}{S(t)}\right)1_{\bar \nu}\nonumber\\
+        1_{\bar \nu}&=&1+\frac{\bar{\delta}_{\bar \nu}^2}{\bar{\delta}_0^2},\nonumber\\
+           \bar{\delta}_{\bar \nu}^2&=&4\bar{\nu}\int_0^t
+                     \frac{S(t')}{S_0}\mbox{d}t',\nonumber
+\end{eqnarray}
+%
+where $\bar{\delta}_{\bar \nu}$ is the diffusion-added $\eps$-stretched thickness of the core. $L_n$ are the Laguerre polynomials, $P_n(\eta^2)=L_{n-1}(\eta^2)-L_n(\eta^2)$, $\gamma$ is the Euler's constant,  and $(C_n,D_n)$ are the Fourier components of the initial axial velocity and tangential vorticity
+%
+\begin{eqnarray} 
+   C_n&=&\int_0^{\infty}w_0(\eta)L_n(\eta^2)\eta\mbox{d}\eta,\nonumber\\
+   D_n&=&\int_0^{\infty}\zeta_0(\eta)L_n(\eta^2)\eta\mbox{d}\eta,\nonumber
+\end{eqnarray}
+%
+$C_0=m_0/2\pi\bar{\delta}_0^2,$ $D_0=\Gamma/2\pi\bar{\delta}_0^2,$ $C_1=D_1=0.$ For the non-similar core structure as it is implemented in {\it ezstep3d.h} the inner functions are given by[7]
+%
+\begin{eqnarray} 
+        C_v(t)&=&-\log\bar{\delta}
+                 +\frac{1}{2}(1+\gamma-\log 2)
+                 +\frac{4\pi^2}{\Gamma^2}
+                     \sum_{(n,m)\in {\Bbb{N}}^2\backslash(0,0)}^{\infty}
+        \frac{\bar{\delta}_0^4D_nD_mA_{nm}}{n+m}
+                              1_{\bar \nu}^{-(n+m)}
+                                           ,\nonumber\\
+        C_w(t)&=&-\frac{2}{\bar{\delta}^2}
+       \left(\frac{S_0}{S(t)}\right)^4
+        \left[
+                  \frac{m_0^2}{\Gamma^2}
+             +\frac{8\pi^2}{\Gamma^2}
+     \sum_{(n,m)\in {\Bbb{N}}^2\backslash(0,0)}^{\infty}
+             \bar{\delta}_0^4C_nC_mA_{nm}
+                 1_{\bar \nu}^{-(n+m)}\right],\nonumber 
+\end{eqnarray}
+%           
+where
+%
+\begin{eqnarray} 
+   A_{nm}&=&\int_0^{\infty}\mbox{e}^{-2x}L_n(x)L_m(x)\mbox{d}x
+                \nonumber\\
+           &=&\frac{(n+m)!}{n!\mbox{~}m!\mbox{~}2^{m+n+1}}.
+                  \nonumber
+\end{eqnarray}
+%
+
+
+\end{list}
+
+
+\item[(2)] The Local Induction Approximation (LIA) equation  (not stiff)
+	\begin{eqnarray}
+	\label{eCT1}
+		\partial{\vX}/\partial{t}={\Gamma K(s,t) \over{4\pi}}\left[{-\log\epsilon+\log(S)-1}
+		{+C_v(t)+C_w(t)}\right]\vb(s,t),
+        \end{eqnarray} 
+
+\item[(3)] A simple de-singularized method (stiff)
+
+	\begin{eqnarray}
+	\label{Burger}
+ 		\partial{\vX}/\partial{t}=
+		{\Gamma\over{4\pi}} \int\limits_{{\cal{C}}} \sigma(s',t)
+		{\vtau(s',t)\times\left(\vX(s,t)-\vX(s',t)\right)
+		\over{\left[\left|\vX(s,t)-\vX(s',t)\right|^2+s_{c}^2\right]}^{3/2}}\mbox{d}s',
+       \end{eqnarray}
+with
+      \begin{eqnarray}
+	\label{loi2}
+    		 s_c(s,t)=\epsilon\exp\left({-C_v(t)-C_w(t)}\right).
+        \end{eqnarray}
+
+
+\item[(4)] The M1 de-singularized method of Knio and Klein (not stiff)[3,5]
+
+	\begin{eqnarray}
+	\label{M1}
+ 		\partial{\vX}/\partial{t}=\vv_{\sigma_1}+\left(\vv_{\sigma_1}-\vv_{\sigma_2}\right)
+                             \frac{\log(\sigma_1/\delta^{ttm})}{\log(\sigma_2/\sigma_1)}
+       \end{eqnarray}
+
+where
+	\begin{eqnarray}
+ 		\vv_x=
+		{\Gamma\over{4\pi}} \int\limits_{{\cal{C}}} \sigma(s',t)
+		{\vtau(s',t)\times\left(\vX(s,t)-\vX(s',t)\right)
+		\over{\left[\left|\vX(s,t)-\vX(s',t)\right|^2\right]}^{3/2}}
+                  \kappa(\frac{\left|\vX(s,t)-\vX(s',t)\right|}{x})\mbox{d}s',
+       \end{eqnarray}
+with $\kappa(r)=\tanh(r^3)$ and 
+      \begin{eqnarray}
+	\label{loi3}
+                  \delta^{ttm}&=&\epsilon\exp\left({C^{ttm}+1-C_v(t)-C_w(t)}\right),\\
+                    \sigma_1&=& 3 \sigma_{max},\\
+                    \sigma_2&=& 2 \sigma_{max},\\
+                    \sigma_{max}&=& \mbox{d}s \max_{s\in[0,2\pi]} \sigma(s,t).
+        \end{eqnarray}
+With the choice of $\kappa(r)=\tanh(r^3),$ the $C^{ttm}$ constant is $C^{ttm}=-0.4202.$
+\end{list}
+
+In case of several filaments the mutual induction velocity of the filament $\vX_j$
+	\begin{eqnarray}
+	\label{Burgers}
+		{\Gamma_j\over{4\pi}} \int\limits_{{\cal{C}}_j} \sigma_j(s',t)
+		{\vtau_j(s',t)\times\left(\vX(s,t)-\vX_j(s',t)\right)
+		\over{\left|\vX(s,t)-\vX_j(s',t)\right|}^3}\mbox{d}s',
+       \end{eqnarray}
+is added to the previous velocity.
+
+In case of open filament, the filament is supposed to be periodical in the $x$ direction. A bits of filament corresponding to an integer numbers of periods is advanced in time. The local induction at point $\vX(s,t)$ on this filament is evaluated with either of the formulas (1), (2), (3) or (4) as for a closed filament by having the location of this point at the center of a bit of filament with the integer numbers of periods. The induction of the missing part of the open filament is then evaluated with the mutual induction velocity formula (11) as if it were coming from other filaments. 
+
+
+\medskip
+{\bf V.  Compilation Macros} 
+\smallskip
+
+The main compilation parameters are in {\em ezvortex.h}:
+\begin{itemize}
+\item You can choose the equation of motion whether the macros {\sf LOCAL\_INDUCTION}, {\sf CALL\_AND\_TING}, {\sf DE\_SINGU}, and {\sf  M1\_KNIO\_KLEIN} are set to 1 or 0. 
+\item You can choose closed or open filament whether the macro {\sf CLOSED} is set to 1 or 0. 
+\item You can have graphics or not at run time whether the macro {\sf GRAPHICS}  is set to 1 or 0. 
+\item You can snapshot different history steps if  the macro {\sf MOVIE} is set to 1 (only on a SGI work station). 
+\item You can run a {\em history.dat} file instead of computing whether the macro {\sf COMPUTE} is set to 1 or 0.
+\item You can have a non-similar part of the core or not  whether the macro {\sf NON\_SIMIL\_PART} is set to 1 or 0. The macro {\sf SIMIL\_PART} has to be set to 1 in any case.
+\item You can have an uniform core by setting the macro {\sf SIMIL\_PART} to 0 and the macro {\sf UNIFORM\_CORE}  to 1 (to be coherent you have to choose {\sf nu\_bar=0} in {\em task.dat}). 
+\item You can choose to have spectral spatial derivative or not by setting the macro {\sf SPECTRAL} to 1 or 0.
+\item You can choose to have an explicit (order 1) time stepping with the macro {\sf EXPLICIT}, an implicite one with the macro {\sf NEWTON}, and an explicit Adams-Bashforth with the macro {\sf ADAMS\_BASHFORTH}. The explicit  methods (order 1 or Adams Bashforth) can be performed either with a Jacobi iteration or a Gauss-Seidel one whether the macro {\sf GAUSS\_SEIDEL} is set to 0 or 1. The Callegari and Ting method and the LIA method are numerically instable with an explicit (order 1 or Adams Bashforth) scheme either a Jacobi or a Gauss-Seidel stepping is used. The M1 Knio and Klein method is stable with an explicit scheme.
+\item You can test the convergence of the Biot-Savart velocity computation at initial time if the macro {\sf CONV\_ANALYSE} is set to 1. A file {\em look} is then generated with three columns associated to the three components of the velocity on the filament. The convergence can be assess with the number of point and also with the number of periodic boxes for open filaments. 
+\item You can have an automatic motion of the graphic window in the z direction or not whether the macro {\sf MOVE} is set to 1 or 0.
+\end{itemize}
+
+\medskip
+{\bf VI.  Parameters} 
+\smallskip
+
+ The parameters are either set in the routine {\sf Generate\_ic()} at the end of {\em ezvortex.c} when these vortices are initially created or in the file {\em task.dat}. The parameters of {\em task.dat} are loaded at the beginning of a run and so you need not to re-compile {\em ezvortex} when these parameters are  changed.
+
+In the case of similar vortex filaments {\sf delta\_0\_bar\_param} is the initial stretched core radius $\bar{\delta}_0$, {\sf m\_0\_param} is the initial axial flux $m_0$, {\sf gamma\_param} is the circulation  $\Gamma$,  and {\sf epsilon}  is the reduced thickness $\epsilon$. They  are parameters of the core structure. {\sf nu\_bar}  is the stretched viscosity $\bar{\nu}$ of the fluid. Thus the ``physical'' parameters
+in the simulation are: {\sf delta\_0\_bar\_param}, {\sf m\_0\_param}, {\sf gamma\_param}, {\sf epsilon}, {\sf nu\_bar} and {\sf nf} the number of filaments.  The parameters {\sf delta\_0\_bar\_param}, {\sf m\_0\_param}, {\sf gamma\_param}  are selected for each filaments in the routine {\sf Generate\_ic()} at the end of {\em ezvortex.c} when these vortices are initially created. The parameters {\sf epsilon} and {\sf nu\_bar} are set in the file {\em task.dat}.
+
+The ``numerical'' parameters for the simulation are: {\sf np}
+= number of spatial points in each filament, {\sf ts} = time
+step, 
+{\sf n\_b} = number of periodic boxes (for open filaments)
+ and are also set in the file {\em task.dat}. 
+
+The other parameters set in
+{\em task.dat} are:
+
+\begin{list}{dummy}
+{\labelwidth=0.1in\labelsep=0pt\partopsep=-10pt\parsep=-10pt\itemsep=0pt}
+\item[~]{\sf Number of time steps to take} \\
+        {\sf Time steps per plot.} Also set the number of time
+        steps per filament computation. \\
+        {\sf error\_stop.} Error to stop the Newton iteration for the implicit method.  \\
+        {\sf Time steps per write} to history file and of snapshot if {\sf MOVIE} is set to 1 in {\em ezvortex.h} \\ 
+	\\
+	{\sf initial field display} : curve or worm \\
+	{\sf initial condition type} : from 0 to 12.  \\
+	{\sf output type} : ascii or binary \\
+	\\
+	{\sf verbose} 
+\end{list}
+
+These are more or less self-explanatory.  
+
+If {\sf  Time steps per write} is non-zero then the filament data will be written to a file ({\em history.dat}) every {\sf  Time steps per write} (whether or not there is any graphics)  which can be executed  by {\em ezvortex} with the macro {\sf COMPUTE} set to 1. (The filaments will also be saved every {\sf Time steps per write} to a file ({\em history\_dat.m}) which can be executed with matlab.)
+ 
+
+I leave it to you to look at different initial condition types at 
+the end of {\em task.dat} and {\em ezvortex.c}. The number of filaments {\sf nf} set has to 
+be coherent with the initial condition chosen. You can choose between :
+\begin{list}{dummy}
+{\labelwidth=0.2in\labelsep=4pt\partopsep=-10pt\parsep=-10pt\itemsep=12pt}
+
+\item[(0)] Oscillations of a Vortex Ring (Standing wave)
+
+\item[(1)] Oscillations of an ellipse in a plan y-z
+
+\item[(2)] Oscillations of a Vortex Ring (Travelling wave)
+
+\item[(3)] Oscillations of a triangle Vortex Ring 
+
+\item[(4)] Motion of a Lissajous  ring
+
+\item[(5)] Motion of two side by side  vortex rings
+
+\item[(6)] Leap frogging of two vortex rings
+
+\item[(7)] Motion of two face to face (and shifted) vortex rings
+
+\item[(8)] Motion of two face to face vortex rings
+
+\item[(9)] Motion of two linked vortex rings
+
+\item[(10)] Motion of two vortex rings
+
+\item[(11)] Oscillations of a straight filament
+
+\item[(12)] Motion of a helical filament
+
+\item[(13)] Oscillation of two trailling vortices
+
+\item[(14)] Crow instability  of two trailling vortices
+
+\item[(15)] Crow instability  of two trailling vortices (initialy at most instable angle)
+
+\end{list} 
+
+
+The other place to look for ``parameters'' is in the header files.
+The main compilation parameters are in {\em ezvortex.h}.   Many of the macro
+definitions in the other header files can be replaced with variables.
+
+\medskip
+{\bf VII.  Convergence and value of numerical parameters } 
+\smallskip
+
+  In this section we give the values of the numerical parameter that give converged numerical results for the different configurations under consideration at the end of the previous section.
+
+    For all following simulations (M1 method with Adams Bashforth), we took:
+
+ {\sf delta\_0\_bar\_param}= 1, {\sf m\_0\_param} = 0, {\sf nu\_bar} =0.
+\begin{list}{dummy}
+{\labelwidth=0.2in\labelsep=4pt\partopsep=-10pt\parsep=-10pt\itemsep=12pt}
+
+\item[(1)] Oscillations of a Vortex Ring (Standing waves)
+
+{\sf gamma\_param}=1, {\sf epsilon}=0.1, 
+
+{\sf $\rho$}= 0.01, mode 3
+
+{\sf np}= 101, {\sf ts} = 0.0016,  {\sf nsteps} = 7000 
+
+computational time (SGI R10000 225MHz)= 
+\item[(2)] Oscillations of a straight filament
+
+{\sf gamma\_param}=$\pm$1, {\sf epsilon}=0.1, 
+
+{\sf $\rho$}= 0.01, {\sf wave\_length}= 1.25
+
+{\sf np}= 101, {\sf ts} = 0.00065, {\sf n\_b} = 4,  {\sf nsteps} = 7000
+
+computational time = 
+\item[(3)] Oscillation of two trailling vortices
+
+{\sf gamma\_param}=$\pm$1, {\sf epsilon}=0.1, 
+
+
+{\sf $\rho$}= 0.01, {\sf wave\_length}= 1.25
+
+{\sf np}= 101, {\sf ts} = 0.00065, {\sf n\_b} = 4,  {\sf nsteps} = 8000
+
+computational time = 
+\item[(4)] Crow instability  of two trailling vortices
+
+{\sf gamma\_param}=$\pm$1, {\sf epsilon}=0.02, 
+
+{\sf $\rho$}= 0.01, {\sf wave\_length}= 10.21, {\sf theta}= 47.40 degree
+
+{\sf np}= 257, {\sf ts} = 0.00019, {\sf n\_b} =4,  {\sf nsteps} = 795
+
+computational time = 
+\end{list} 
+
+
+
+\medskip
+{\bf VIII. Indices and  implementing variables} 
+\smallskip
+
+
+    Coordinates of nodes $i$ on the filament $j$ are stored in the pointer $u$ and are managed by the three macos $Ux(i,j),Uy(i,j),Uz(i,j).$ The same kind of pointer ($u_s$ and $u_{ss}$) and macros are used for the first and second derivatives or for $\sigma$ and the velocity components. The index $i$ range from $0$ to $np+1$ and the index $j$ from $0$ to $nf-1.$ 
+
+
+(1) Closed filament:
+    
+    On a closed filament, the point of index $np$ is at the same location as the point of index $1$. Points $0$ and $np+1$ are added fictious points which may be of use. To advance all the points, the velocity has to be cumputed from $i=0$ to $i=np-1$.
+
+
+(2) Open filament:
+
+   On an open  filament, the point of index $np$ is the periodic point associated to the point of index $1$. Points $0$ and $np+1$ are added fictious points which may be of use. To advance all the points, the velocity has to be cumputed from $i=0$ to $i=np$.
+
+
+   The number of points $np$ has to be an odd number. The point of index $(np+1)/2$ is the middle point. In the spectral methods the only points of use are the non periodic points, {i.e.} the points from $i=1$ to $i=np-1.$  The index $np-1$ is an even number and has to be 256.
+
+   To  find the velocity at any point $i$, the temporary pointers $(ux_{tmp},uy_{tmp},uz_{tmp})$ are used to locate this point at the central index $(np+1)/2$ of these pointers and remaining points of these pointers are filled with related points. By using these pointers, the same procedure is then used to compute the velocity whatever point is under consideration. The same trick is used for open filament. The procedure to fill the $(ux_{tmp},uy_{tmp},uz_{tmp})$ pointers is different whether the filament is closed or open because indices have to be managed differently. For open filaments the induced velocity of translating points of the $(ux_{tmp},uy_{tmp},uz_{tmp})$ positions ( $n_b$ copies on the left and  on the right) is added. 
+
+
+
+
+\bigskip
+
+{\bf References} 
+
+[1] M. Dowle, R.M. Mantel, and D. Barkley, {\it Fast simulations of waves in three-dimensional excitable media}, Int. J. Bif. Chaos, 7(11) 2529--2546 (1997).
+
+[2] A.J. Callegari and L. Ting, {\it Motion of a curved vortex filament with decaying vortical core and axial velocity}, SIAM J. Appl. Math. 35 (1) 1978 pp. 148-175
+
+[3]  R. Klein and O.M. Knio : {\it Asymptotic Vorticity Structure and Numerical Simulation of Slender Vortex Filaments}, J. Fluid Mech.,284, pp.257-321,1995 
+
+[4] D. Margerit, P. Brancher and A. Giovannini, {\it Implementation and validation of a slender vortex filament code: Its application to the study of a four-vortex wake model}, International Journal of Numerical Methods in Fluids, Vol 44, N 2, pp. 175-196, 2004
+
+[5] O.M. Knio and R. Klein, {\it Improved thin tube models for slender vortex simulations}, J. Comput. Phys., p. 68-82, 2000 
+
+[6] D. Margerit and  J-P. Brancher : {\it Asymptotic Expansions of the Biot-Savart law for a slender vortex with core variation}, to appear in Journal of Engineering Mathematics
+
+[7] D. Margerit: {\it Axial core-variations of axisymmetric shape on a curved slender vortex filament with a similar, Rankine, or bubble
+core}, Phys. of Fluids vol 14, n 12, pp.4406-4428, 2002
+
+Please send comments to daniel.margerit@free.fr
+
+
+\end{document} 
+
+
+The $(i,j)$ point is the point $i$ of the filament $j$, then a time series at the
+$(i,j)$ point will be saved to a file ({\em
+history.dat}) every {\sf Time steps per write} assuming it is not zero.  [This is not implemented yet.]  
