@@ -1,0 +1,44 @@
+0.		parameter nu_bar
+0.1		parameter epsilon  
+
+101,1           np,nf (ODD Numb of pts per filament(<= NP if ic.dat), Num of filaments : this number must be coherent with the initial condition type set below) 
+0.0019         ts (Timestep)
+0.00016         error_stop (error to stop the Newton iteration)
+
+10000		number of time steps to take
+1		time steps per plot 
+0  		write_filament: if nonzero then write filament data
+50		time steps per write to history file (0 = no write)
+8               number of periodic boxes (open filament)
+20,20,20	(i,j,k) history point.   
+
+0  		initial display mode of filament : 0 for curve, 1 for worm
+0		initial condition type (if ic.dat does not exist)
+1, 2            simulation resolution, rotation resolution
+0		output type: 0 for ascii, else binary
+
+3   		verbose: Level of diagnostics: 0 for none
+                                               1 for normal
+                                               2 for detailed
+                                               3 for all kinds of stuff
+
+Choice of the initial condition type: 
+(0) Oscillations of a Vortex Ring (Standing wave)
+(1) Oscillations of an ellipse in a plan y-z
+(2) Oscillations of a Vortex Ring (Travelling wave)
+(3) Oscillations of a triangle Vortex Ring 
+(4) Motion of a Lissajous  ring
+(5) Motion of two side by side  vortex rings
+(6) Leap frogging of two vortex rings
+(7) Motion of two face to face (and shifted) vortex rings
+(8) Motion of two face to face vortex rings
+(9) Motion of two linked vortex rings
+(10) Motion of two vortex rings
+(11) Oscillations of a straight filament
+(12) Motion of a helical filament
+(13) Oscillation of two trailling vortices
+(14) Crow instability  of two trailling vortices (initialy at angle 0)
+(15) Crow instability  of two trailling vortices (initialy at most instable angle)
+(16) Vortex ring pairs
+(17) Trailling vortex pairs
+(18) Rotating Trailling vortices

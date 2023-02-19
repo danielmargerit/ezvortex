@@ -1,0 +1,7 @@
+extern int fft99a_(real *a, real *work, real *trigs, integer *inc, integer *jump, integer *n, integer *lot);
+extern int fft99b_(real *work, real *a, real *trigs, integer *inc, integer *jump, integer *n, integer *lot);
+extern int fft991_(real *a, real *work, real *trigs, integer *ifax, integer *inc, integer *jump, integer *n, integer *lot, integer *isign);
+extern int set99_(real *trigs, integer *ifax, integer *n);
+extern int fax_(integer *ifax, integer *n, integer *mode);
+extern int fftrig_(real *trigs, integer *n, integer *mode);
+extern int vpassm_(real *a, real *b, real *c__, real *d__, real *trigs, integer *inc1, integer *inc2, integer *inc3, integer *inc4, integer *lot, integer *n, integer *ifac, integer *la);

@@ -1,0 +1,85 @@
+# ----------------------------------- #
+# This is the Makefile for EZ-vortex. #
+# ----------------------------------- #
+
+# NX, NY, NZ defined?
+# -------------------
+# If you wish to specify NP (the number of point) , NF (the number of filaments) 
+#  at compile time, then uncomment the following and set the values
+# to what you want.  They need not all be set.  Those that are set will be
+# ignored in task.dat.
+
+# NOPTION = -DNP=41 -DNF=41 
+
+# -------------------
+# Choose the compiler
+# -------------------
+
+# EZ-Vortex conforms to the ANSI C standard. It will compile with cc (e.g.
+# SGI's C) or gcc (GNU C).  Use at least the -O2 compiler option, the others
+# are optional options.  If you use the warning options -Wall or -fullwarn
+# (which you should use if you modify the code) then you may get some
+# warnings. These are probably OK.
+
+# Uncomment below for SGI cc
+# --------------------------
+CC = cc 
+CFLAGS = -O2 -ansi -n32 -mips4
+
+# Uncomment below for GNU cc
+# --------------------------
+#CC = gcc 
+#CFLAGS = -O2 -Wall -ansi 
+
+# ----------------------------------------------------
+# Set the libraries
+# Note: In addition to specify the libraries, you 
+# might need to specify the location of the 
+# GL and X libraries explicitly with something like
+# LDFLAGS = -L/usr/X11R6/lib 
+# ----------------------------------------------------
+
+# OpenGL with X
+# -------------
+
+LOADLIBES = -lGL -lX11 -lXext  -lm   -I/usr/include 
+
+
+# GLU is used only for the textures of worm in ezopengl.c
+
+
+# Mesa with X
+# ------------
+
+#LOADLIBES = -lMesaGL -lX11 -lXext -lm -L$(HOME)/enewsoft/ezscroll/Mesa-3.1lib
+
+# -----------------------------------------------
+# Probably you wont need to change anything below.
+# ------------------------------------------------
+
+OBJ=ezvortex.o ezstep3d.o ezgraph3d.o ezopengl.o fft.o
+
+.c.o :
+	$(CC) -c $(CFLAGS) $(NOPTION) $*.c
+
+ezvortex: $(OBJ) 
+	$(CC) $(LDFLAGS) $(OBJ) -o ezvortex $(LOADLIBES)
+
+
+# Dependencies
+# ------------
+
+ezvortex.o   : ezvortex.h ezopengl.h Makefile ezvortex.h
+ezstep3d.o   : ezvortex.h ezstep3d.h ezopengl.h Makefile ezvortex.h
+ezgraph3d.o  : ezvortex.h ezgraph3d.h ezopengl.h Makefile ezvortex.h
+ezopengl.o   : ezvortex.h ezgraph3d.h ezopengl.h Makefile ezvortex.h
+
+clean:	tidy
+	rm -f core *~ .*~ 	
+	rm -f *.log *.dvi *.aux
+
+tidy:
+	rm -f ezvortex ezvortex *.o 
+
+# Rem: /usr/bin/time -l ezvortex 
+# to have the Cpu time 
