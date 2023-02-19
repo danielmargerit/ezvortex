@@ -18,7 +18,7 @@ You can see my ResearchGate page [here](https://www.researchgate.net/profile/Dan
 * It is written in C and uses OpenGL for the 3D rendering.
 
 ## Installation/Usage
-* see documentation ([pdf]({{site.baseurl}}/docs/ezvortex.pdf))
+* see documentation ([pdf](./docs/ezvortex.pdf))
 
 ## Log
 
